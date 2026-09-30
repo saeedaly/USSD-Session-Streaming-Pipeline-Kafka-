@@ -1,46 +1,134 @@
-# USSD-Session-Streaming-Pipeline-Kafka-Base
-A lightweight Apache Kafka project that simulates real-time USSD session events — the way telecom networks handle short codes like #7115# — using a Python producer and consumer built with confluent-kafka.
+# USSD Session Streaming Pipeline - Base
 
-# 🧠 Overview
-The project consists of two independent microservices:
+A lightweight Apache Kafka project that simulates real-time USSD session events using a Python producer and consumer. It mimics telecom systems that generate session activity such as USSD dial attempts, service-code requests, and delivery outcomes.
 
-producer.py — Simulates a telecom network generating USSD dial sessions (random MSISDNs, service codes, and delivery statuses) and publishes them as JSON events to a Kafka topic every 2 seconds.
-consumer.py — Subscribes to the topic, consumes the session events, and prints them in real time.
+## Overview
 
-# ✨ Features
-🎲 Realistic event simulation — random Egyptian MSISDNs (2012XXXXXXXX), real-style USSD service codes, and weighted delivery statuses.
-⚖️ Weighted statuses — SUCCESS (92%), FAILED (6%), TIMEOUT (2%)
-🔁 Consumer group support with earliest offset reset for replayability
-🧾 JSON message format for easy integration with downstream systems
+This project contains two independent microservices:
 
-# 🛠️ Tech Stack
-Python
-confluent-kafka	Kafka producer & consumer client
-Apache Kafka	Event streaming platform
-Docker	Running Kafka locally
+- `producer.py`: generates realistic USSD session events and publishes them to a Kafka topic
+- `consumer.py`: consumes those events and prints them in real time
 
-# 📋 Prerequisites
-Python 3.8+
-A running Kafka broker on localhost:9092
+The producer simulates a telecom network producing events like:
+- mobile numbers
+- service codes such as `#7115#`
+- timestamps
+- delivery status (`SUCCESS`, `FAILED`, `TIMEOUT`)
 
-# ⚙️ Installation
-1. Clone the repository
-git clone https://github.com/<your-username>/<your-repo-name>.gitcd <your-repo-name>
-2. pip install confluent-kafka
-3. docker compose up -d
-# 🚀 Usage
-Terminal 1 — start the consumer first:
-  python consumer.py
-Terminal 2 — start the producer:
-  python producer.py
-Press Ctrl + C in either terminal to stop gracefully (the producer flushes pending messages; the consumer closes cleanly).
+## Features
 
-# 🖥️ Sample Output
-Producer:
+- Realistic event simulation using Egyptian MSISDN examples
+- Real-style USSD service codes
+- Weighted status handling:
+  - `SUCCESS`: 92%
+  - `FAILED`: 6%
+  - `TIMEOUT`: 2%
+- Consumer group support with offset reset for replayability
+- JSON-based payloads for easy downstream integration
+- Simple local Kafka testing setup using Docker
 
-✅ Session sent{"session_id":"20127654321020250101143012","dial":"201276543210","timestamp":"2025-01-01 14:30:12.34","service_code":"#7115#","status": "SUCCESS"}
+## Tech Stack
 
-Consumer:
+- Python 3.8+
+- Confluent Kafka Python client
+- Apache Kafka
+- Docker
 
+## Prerequisites
+
+Before starting, make sure you have:
+
+- Python 3.8 or newer
+- Docker installed and running
+- A Kafka broker available at `localhost:9092`
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/<your-username>/<your-repo-name>.git
+   cd <your-repo-name>
+   ```
+
+2. Install the Kafka client:
+   ```bash
+   pip install confluent-kafka
+   ```
+
+3. Start Kafka locally with Docker:
+   ```bash
+   docker compose up -d
+   ```
+
+4. Confirm Kafka is reachable:
+   ```bash
+   kafka-topics --bootstrap-server localhost:9092 --list
+   ```
+
+## Configuration
+
+Make sure your producer and consumer use the same Kafka topic. For example:
+
+```python
+TOPIC = "ussd-events"
+```
+
+If your project uses a different topic name, update both files to match.
+
+## Usage
+
+Start the consumer first:
+
+```bash
+python consumer.py
+```
+
+Then start the producer in a second terminal:
+
+```bash
+python producer.py
+```
+
+To stop the services, press `Ctrl + C`. The producer flushes any pending messages before exiting.
+
+## Example Output
+
+### Producer
+```json
+{"session_id":"20127654321020250101143012","dial":"201276543210","timestamp":"2025-01-01 14:30:12.34","service_code":"#7115#","status":"SUCCESS"}
+```
+
+### Consumer
+```text
 🟢 4 Received session: 20127654321020250101143012 from 201276543210 and it was SUCCESS
+```
 
+## Project Structure
+
+```text
+.
+├── producer.py
+├── consumer.py
+├── docker-compose.yml
+├── README.md
+└── requirements.txt
+```
+
+## Troubleshooting
+
+### Kafka connection errors
+- Ensure Docker is running
+- Verify Kafka is listening on `localhost:9092`
+- Check the container logs:
+  ```bash
+  docker compose logs -f
+  ```
+
+### No messages received
+- Confirm both producer and consumer use the same topic name
+- Start the consumer before the producer
+- Check whether the consumer group reset is configured correctly
+
+## License
+
+This project is intended for learning and demonstration purposes.
